@@ -7,12 +7,14 @@ function App() {
 
   return (
     <>
+
     <Routes>
       <Route path='/' element={<Home/>}/>
       <Route path='/review' element={<BuilderPage/>}/>
       <Route path='/buidler' element={<ReviewPage/>}/>
     </Routes>
 
+    <Home/>
     </>
   )
 }
