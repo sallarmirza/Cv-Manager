@@ -13,8 +13,6 @@ function App() {
       <Route path='/review' element={<BuilderPage/>}/>
       <Route path='/buidler' element={<ReviewPage/>}/>
     </Routes>
-
-    <Home/>
     </>
   )
 }

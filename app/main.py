@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from model.system_orm import Base
 from agents import cv_builder
+
+
 app=FastAPI(title='CV Manager')
 
 app.add_middleware(
