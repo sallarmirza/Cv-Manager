@@ -1,5 +1,4 @@
 import React from "react";
-import { useCvBuilder } from "../hooks/UseCvBuilder";
 import {
   Box,
   Button,
@@ -9,15 +8,13 @@ import {
   Paper,
 } from "@mui/material";
 
-export const CvForm = () => {
-  const { form, loading, handleChange, result, handleSubmit } = useCvBuilder();
-
+export const CvForm = ({ form, loading, onChange, onSubmit }) => {
+  
   return (
     <Box sx={{ p: 2, maxWidth: 800 }}>
       <Paper variant="outlined" sx={{ p: 4, borderRadius: 2 }}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={onSubmit}>
           <Stack spacing={4}>
-
             {/* Personal Info */}
             <Box>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
@@ -29,14 +26,14 @@ export const CvForm = () => {
                   label="First Name"
                   name="firstName"
                   value={form.firstName}
-                  onChange={handleChange}
+                  onChange={onChange}
                 />
                 <TextField
                   fullWidth
                   label="Last Name"
                   name="lastName"
                   value={form.lastName}
-                  onChange={handleChange}
+                  onChange={onChange}
                 />
               </Stack>
             </Box>
@@ -53,14 +50,14 @@ export const CvForm = () => {
                     label="Job Title"
                     name="jobTitle"
                     value={form.jobTitle}
-                    onChange={handleChange}
+                    onChange={onChange}
                   />
                   <TextField
                     fullWidth
                     label="Company"
-                    name="company"
-                    value={form.company}
-                    onChange={handleChange}
+                    name="companyName"
+                    value={form.companyName || ""}
+                    onChange={onChange}
                   />
                 </Stack>
 
@@ -71,7 +68,7 @@ export const CvForm = () => {
                     label="Start Date"
                     name="companyStartDate"
                     value={form.companyStartDate}
-                    onChange={handleChange}
+                    onChange={onChange}
                     slotProps={{ InputLabelProps: { shrink: true } }}
                   />
                   <TextField
@@ -80,7 +77,7 @@ export const CvForm = () => {
                     label="End Date"
                     name="companyEndDate"
                     value={form.companyEndDate}
-                    onChange={handleChange}
+                    onChange={onChange}
                     slotProps={{ InputLabelProps: { shrink: true } }}
                   />
                 </Stack>
@@ -92,7 +89,7 @@ export const CvForm = () => {
                   label="Achievements"
                   name="achievements"
                   value={form.achievements}
-                  onChange={handleChange}
+                  onChange={onChange}
                 />
               </Stack>
             </Box>
@@ -110,14 +107,14 @@ export const CvForm = () => {
                     label="Institute"
                     name="instituteName"
                     value={form.instituteName}
-                    onChange={handleChange}
+                    onChange={onChange}
                   />
                   <TextField
                     fullWidth
                     label="Degree"
                     name="degreeName"
                     value={form.degreeName}
-                    onChange={handleChange}
+                    onChange={onChange}
                   />
                 </Stack>
 
@@ -128,7 +125,7 @@ export const CvForm = () => {
                     label="Start Date"
                     name="eduStartDate"
                     value={form.eduStartDate}
-                    onChange={handleChange}
+                    onChange={onChange}
                     slotProps={{ InputLabelProps: { shrink: true } }}
                   />
                   <TextField
@@ -137,7 +134,7 @@ export const CvForm = () => {
                     label="End Date"
                     name="eduEndDate"
                     value={form.eduEndDate}
-                    onChange={handleChange}
+                    onChange={onChange}
                     slotProps={{ InputLabelProps: { shrink: true } }}
                   />
                 </Stack>
@@ -147,12 +144,11 @@ export const CvForm = () => {
                   label="Skills"
                   name="skills"
                   value={form.skills}
-                  onChange={handleChange}
+                  onChange={onChange}
                 />
               </Stack>
             </Box>
 
-            {/* Submit */}
             <Button
               type="submit"
               variant="contained"
@@ -162,12 +158,6 @@ export const CvForm = () => {
             >
               {loading ? "Creating..." : "Create CV"}
             </Button>
-
-            {result && (
-              <Typography color="success.main">
-                CV Created Successfully ✅
-              </Typography>
-            )}
           </Stack>
         </form>
       </Paper>

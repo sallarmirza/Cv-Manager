@@ -6,7 +6,7 @@ export const useCvBuilder = () => {
     firstName: "",
     lastName: "",
     jobTitle: "",
-    company: "",
+    companyName: "",
     companyStartDate: "",
     companyEndDate: "",
     achievements: "",
@@ -19,6 +19,7 @@ export const useCvBuilder = () => {
 
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [error,setError]=useState(null)
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,16 +32,21 @@ export const useCvBuilder = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
+    setResult(null);
 
     try {
       const response = await submitCv(form);
+      console.log("Backend Response:", response.data); 
       setResult(response.data);
     } catch (error) {
       console.error("Error submitting CV:", error);
+      setError("Failed to generate Cv. Please try again")
     } finally {
       setLoading(false);
     }
   };
 
-  return { form, loading, handleChange, result, handleSubmit };
+  // form, loading, error, result, handleChange, handleSubmit
+return { form, loading, error, result, handleChange, handleSubmit };
 };
