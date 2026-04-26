@@ -1,34 +1,43 @@
-import React from "react";
+import React, { useState } from "react";
 import {
-
   Box,
+  Grid,
   List,
   ListItemButton,
   ListItemText,
+  Typography,
 } from "@mui/material";
-import { CvForm } from "../components/CvForm";
+import { useNavigate } from "react-router-dom";
+import { BuilderPage } from "./BuilderPage";
+
 export const Home = () => {
+  const [tab, setTab] = useState("reviewer");
+  const navigate = useNavigate();
+
+  const changeTab = () => {
+    setTab(true);
+  };
   const DrawerList = (
-    <Box sx={{ width: 240,height:'100vh',borderRight:'1px solid black'}} role="presentation">
+    <Box sx={{ height: "100vh", borderRight: "1px solid #ddd" }}>
       <List>
-        <ListItemButton>
-          <ListItemText primary="CV Reviwer" />
-        </ListItemButton>
-        <ListItemButton>
+        <ListItemButton onClick={() => navigate("/builder")}>
           <ListItemText primary="CV Builder" />
+        </ListItemButton>
+
+        <ListItemButton onClick={() => navigate("/review")}>
+          <ListItemText primary="CV Reviewer" />
         </ListItemButton>
       </List>
     </Box>
   );
-  // fragments
-  return <>
-<Box sx={{display:'flex'}}>
-  <Box component="nav">
-    {DrawerList}
-  </Box>
-<Box component="main" sx={{flexGrow:1,p:3,ml:'240px',minHeight:'100vh'}}>
-<CvForm/>
-</Box>
-</Box>
-  </>;
+
+  return (
+    <Grid container>
+      <Grid size={2}>{DrawerList}</Grid>
+
+      <Grid size={10}>
+        <BuilderPage />
+      </Grid>
+    </Grid>
+  );
 };
