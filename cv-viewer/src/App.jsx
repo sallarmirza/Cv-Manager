@@ -1,38 +1,21 @@
-import React from 'react';
-import { ThemeProvider, CssBaseline } from '@mui/material';
-import { theme } from '../src/ThemeProvider'; // Import the theme.js we created earlier
-import { BuilderPage } from './pages/BuilderPage'
-import { Home } from './pages/Home'
-import { ReviewPage } from './pages/ReviewPage'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { CVProvider } from "./context/CVContext";
+import { Home } from "./components/layout/Home";
+import { Builder } from "./pages/Builder";
+import { Reviewer } from "./pages/Reviewer";
 
-function App() {
+export default function App() {
   return (
-    <ThemeProvider theme={theme}>
-      {/* CssBaseline ensures the background color #f1f5f9 is applied to the body */}
-      <CssBaseline /> 
-
-<<<<<<< HEAD
-    <Routes>
-      <Route path='/' element={<Home/>}/>
-      <Route path='/review' element={<BuilderPage/>}/>
-      <Route path='/buidler' element={<ReviewPage/>}/>
-    </Routes>
-
-    <Home/>
-    </>
-  )
-=======
+    <CVProvider>
+      <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/builder" element={<BuilderPage />} />
-          <Route path="/review" element={<ReviewPage />} />
-          {/* Add other routes as needed */}
+          <Route path="/" element={<Home />}>
+            <Route index element={<Navigate to="/builder" replace />} />
+            <Route path="builder" element={<Builder />} />
+            <Route path="reviewer" element={<Reviewer />} />
+          </Route>
         </Routes>
-      
-    </ThemeProvider>
+      </BrowserRouter>
+    </CVProvider>
   );
->>>>>>> a239abe (feat: Frontend Almost complete)
 }
-
-export default App;
