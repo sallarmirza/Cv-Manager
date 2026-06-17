@@ -34,16 +34,14 @@ const ExperienceCard = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-xs font-semibold text-[#4DB6AC] uppercase tracking-widest">Professional Experience</p>
+      <p className="text-xs font-semibold text-[#4DB6AC] uppercase tracking-widest">
+        Professional Experience
+      </p>
 
       {experiences.map((exp, i) => (
         <div key={i} className="flex flex-col gap-4 pb-4 border-b border-gray-100 last:border-0">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-gray-700">
-              {exp.title || exp.company
-                ? `${exp.title}${exp.company ? ` @ ${exp.company}` : ""}`
-                : `Experience ${i + 1}`}
-            </span>
+            <span className="text-sm font-semibold text-gray-700">Experience {i + 1}</span>
             <button
               onClick={() => removeEntry(i)}
               disabled={experiences.length === 1}
@@ -55,11 +53,11 @@ const ExperienceCard = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
             {[
-              { label: "Job Title", key: "title", placeholder: "e.g. Backend Developer", span: "md:col-span-1" },
-              { label: "Company", key: "company", placeholder: "e.g. Acme Corp", span: "md:col-span-1" },
-              { label: "Location", key: "location", placeholder: "e.g. Islamabad, Pakistan", span: "md:col-span-2" },
-              { label: "From", key: "from", placeholder: "e.g. Jan 2023", span: "" },
-              { label: "To", key: "to", placeholder: "e.g. Present", span: "" },
+              { label: "Job Title", key: "title", placeholder: "Software Engineer", span: "md:col-span-1" },
+              { label: "Company", key: "company", placeholder: "Enter company name", span: "md:col-span-1" },
+              { label: "Location", key: "location", placeholder: "Islamabad, Pakistan", span: "md:col-span-2" },
+              { label: "From", key: "from", placeholder: "2023", span: "" },
+              { label: "To", key: "to", placeholder: "Present", span: "" },
             ].map(({ label, key, placeholder, span }) => (
               <div key={key} className={`flex flex-col gap-1 ${span}`}>
                 <label className="text-xs font-semibold text-gray-600">{label}</label>
@@ -144,12 +142,14 @@ const ProjectsCard = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-xs font-semibold text-[#4DB6AC] uppercase tracking-widest">Key Projects</p>
+      <p className="text-xs font-semibold text-[#4DB6AC] uppercase tracking-widest">
+        Key Projects
+      </p>
 
       {projects.map((proj, i) => (
         <div key={i} className="flex flex-col gap-4 pb-4 border-b border-gray-100 last:border-0">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-gray-700">{proj.title || `Project ${i + 1}`}</span>
+            <span className="text-sm font-semibold text-gray-700">Project {i + 1}</span>
             <button
               onClick={() => removeEntry(i)}
               disabled={projects.length === 1}
@@ -164,7 +164,7 @@ const ProjectsCard = () => {
               <label className="text-xs font-semibold text-gray-600">Project Title</label>
               <input
                 type="text"
-                placeholder="e.g. AI Lead Generator"
+                placeholder="Enter project name"
                 value={proj.title}
                 onChange={(e) => update(i, "title", e.target.value)}
                 className={inputCls}

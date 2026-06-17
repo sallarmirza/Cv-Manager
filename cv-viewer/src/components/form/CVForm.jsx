@@ -3,7 +3,8 @@ import { ExperienceAndProjectsStep } from "./steps/ExperienceAndProjectsStep";
 import { EducationAndSkillsStep } from "./steps/EducationStep";
 import { AdditionalInfoStep } from "./steps/AdditionalInfoStep";
 import { useState } from "react";
-const STEPS = ["Personal", "Experience & Projects", "Education & Skills", "Additional Info"];
+
+const STEPS = ["Personal Information", "Experience & Projects", "Education & Skills", "Additional Info"];
 
 const stepComponents = [
   PersonalStep,

@@ -1,199 +1,55 @@
-import { useCV } from "../../context/CVContext";
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { ClassicTemplate } from "./templates/ClassicTemplate";
+import { TraditionalTemplate } from "./templates/TraditionalTemplate";
+import { ModernTemplate } from "./templates/ModernTemplate";
 
-const Section = ({ title, children }) => (
-  <div className="mb-4">
-    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-700 border-b border-gray-400 pb-0.5 mb-2">
-      {title}
-    </h2>
-    {children}
-  </div>
-);
+const TEMPLATES = ["Classic", "Traditional", "Modern"];
+
+const templateMap = {
+  Classic: ClassicTemplate,
+  Traditional: TraditionalTemplate,
+  Modern: ModernTemplate,
+};
 
 export const CVPreview = () => {
-  const { cvData } = useCV();
-  const { personal, summary, experience, education, projects, skills, certifications, languages, achievements } = cvData;
+  const [selected, setSelected] = useState("Classic");
+  const [open, setOpen] = useState(false);
+  const Template = templateMap[selected];
 
   return (
-    <div className="h-full overflow-y-auto bg-gray-100 p-6">
-      {/* A4 paper */}
-      <div
-        className="bg-white mx-auto shadow-md"
-        style={{ width: "210mm", minHeight: "297mm", padding: "12mm 14mm" }}
-      >
-
-        {/* ── Header ── */}
-        <div className="text-center mb-4">
-          <h1 className="text-2xl font-bold uppercase tracking-wide text-gray-900">
-            {personal.name || "Your Name"}
-          </h1>
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-1 text-xs text-gray-600">
-            {personal.location && <span>📍 {personal.location}</span>}
-            {personal.phone && <span>📞 {personal.phone}</span>}
-            {personal.email && <span>✉ {personal.email}</span>}
-            {personal.linkedin && <span>🔗 {personal.linkedin}</span>}
-          </div>
+    <div className="h-full overflow-y-auto bg-gray-100">
+      <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-2.5 bg-white border-b border-gray-200">
+        <span className="text-xs font-medium text-gray-400 uppercase tracking-widest">Preview</span>
+        <div className="relative">
+          <button
+            onClick={() => setOpen((v) => !v)}
+            className="flex items-center gap-2 px-3 py-1.5 text-xs border border-gray-200 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            {selected}
+            <ChevronDown size={12} className={`transition-transform ${open ? "rotate-180" : ""}`} />
+          </button>
+          {open && (
+            <div className="absolute right-0 mt-1 w-36 bg-white border border-gray-200 rounded-md shadow-sm z-20 overflow-hidden">
+              {TEMPLATES.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => { setSelected(t); setOpen(false); }}
+                  className={`w-full text-left px-3 py-2 text-xs transition-colors ${
+                    selected === t ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-
-        {/* ── Summary ── */}
-        {summary && (
-          <Section title="Professional Summary">
-            <p className="text-xs text-gray-700 leading-relaxed">{summary}</p>
-          </Section>
-        )}
-
-        {/* ── Experience ── */}
-        {experience.some((e) => e.title || e.company) && (
-          <Section title="Professional Experience">
-            {experience.map((exp, i) => (
-              <div key={i} className="mb-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-xs font-bold text-gray-800">{exp.title}</span>
-                    {exp.company && (
-                      <span className="text-xs text-gray-600"> — {exp.company}</span>
-                    )}
-                  </div>
-                  <span className="text-xs text-gray-500 shrink-0 ml-2">
-                    {exp.from}{exp.to ? ` – ${exp.to}` : ""}
-                  </span>
-                </div>
-                {exp.location && (
-                  <p className="text-xs text-gray-500 italic">{exp.location}</p>
-                )}
-                {exp.bullets.filter(Boolean).length > 0 && (
-                  <ul className="mt-1 flex flex-col gap-0.5">
-                    {exp.bullets.filter(Boolean).map((b, bi) => (
-                      <li key={bi} className="text-xs text-gray-700 flex gap-1.5">
-                        <span className="mt-0.5 shrink-0">•</span>
-                        <span>{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
-          </Section>
-        )}
-
-        {/* ── Education ── */}
-        {education.some((e) => e.degree || e.institution) && (
-          <Section title="Education">
-            {education.map((edu, i) => (
-              <div key={i} className="mb-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-xs font-bold text-gray-800">{edu.degree}</span>
-                    {edu.institution && (
-                      <span className="text-xs text-gray-600"> — {edu.institution}</span>
-                    )}
-                  </div>
-                  <span className="text-xs text-gray-500 shrink-0 ml-2">
-                    {edu.from}{edu.to ? ` – ${edu.to}` : ""}
-                  </span>
-                </div>
-                {edu.location && (
-                  <p className="text-xs text-gray-500 italic">{edu.location}</p>
-                )}
-              </div>
-            ))}
-          </Section>
-        )}
-
-        {/* ── Projects ── */}
-        {projects.some((p) => p.title) && (
-          <Section title="Key Projects">
-            {projects.map((proj, i) => (
-              <div key={i} className="mb-3">
-                <div className="flex justify-between items-start">
-                  <span className="text-xs font-bold text-gray-800">{proj.title}</span>
-                  {proj.year && (
-                    <span className="text-xs text-gray-500 shrink-0 ml-2">{proj.year}</span>
-                  )}
-                </div>
-                {proj.bullets.filter(Boolean).length > 0 && (
-                  <ul className="mt-1 flex flex-col gap-0.5">
-                    {proj.bullets.filter(Boolean).map((b, bi) => (
-                      <li key={bi} className="text-xs text-gray-700 flex gap-1.5">
-                        <span className="mt-0.5 shrink-0">•</span>
-                        <span>{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
-          </Section>
-        )}
-
-        {/* ── Skills ── */}
-        {skills.some((s) => s.category || s.items) && (
-          <Section title="Technical Skills">
-            <div className="flex flex-col gap-1">
-              {skills.map((sk, i) => (
-                sk.category || sk.items ? (
-                  <div key={i} className="flex gap-1 text-xs">
-                    <span className="font-bold text-gray-800 shrink-0">{sk.category}:</span>
-                    <span className="text-gray-700">{sk.items}</span>
-                  </div>
-                ) : null
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* ── Certifications ── */}
-        {certifications.filter(Boolean).length > 0 && (
-          <Section title="Certifications">
-            <ul className="flex flex-col gap-0.5">
-              {certifications.filter(Boolean).map((cert, i) => (
-                <li key={i} className="text-xs text-gray-700 flex gap-1.5">
-                  <span className="mt-0.5 shrink-0">•</span>
-                  <span>{cert}</span>
-                </li>
-              ))}
-            </ul>
-          </Section>
-        )}
-
-        {/* ── Languages ── */}
-        {languages.some((l) => l.language) && (
-          <Section title="Languages">
-            <div className="flex flex-wrap gap-x-6 gap-y-1">
-              {languages.filter((l) => l.language).map((lang, i) => (
-                <div key={i} className="text-xs text-gray-700">
-                  <span className="font-bold">{lang.language}</span>
-                  {lang.proficiency && (
-                    <span className="text-gray-500"> — {lang.proficiency}</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* ── Achievements ── */}
-        {achievements.some((a) => a.title) && (
-          <Section title="Achievements & Activities">
-            {achievements.map((ach, i) => (
-              ach.title ? (
-                <div key={i} className="mb-3">
-                  <span className="text-xs font-bold text-gray-800">{ach.title}</span>
-                  {ach.bullets.filter(Boolean).length > 0 && (
-                    <ul className="mt-1 flex flex-col gap-0.5">
-                      {ach.bullets.filter(Boolean).map((b, bi) => (
-                        <li key={bi} className="text-xs text-gray-700 flex gap-1.5">
-                          <span className="mt-0.5 shrink-0">•</span>
-                          <span>{b}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ) : null
-            ))}
-          </Section>
-        )}
-
+      </div>
+      <div className="p-6">
+        <div className="bg-white mx-auto shadow-md" style={{ width: "210mm", minHeight: "297mm", padding: "12mm 14mm" }}>
+          <Template />
+        </div>
       </div>
     </div>
   );

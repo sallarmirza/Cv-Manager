@@ -1,6 +1,7 @@
 import { useCV } from "../../../context/CVContext";
 import { inputCls } from "../styles";
 import { Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 const emptySkill = () => ({ category: "", items: "" });
 const emptyEducation = () => ({ degree: "", institution: "", location: "", from: "", to: "" });
@@ -14,8 +15,16 @@ const EducationCard = () => {
     updated[i] = { ...updated[i], [field]: value };
     updateSection("education", updated);
   };
-  const addEntry = () => updateSection("education", [...education, emptyEducation()]);
-  const removeEntry = (i) => updateSection("education", education.filter((_, idx) => idx !== i));
+
+  const addEntry = () => {
+    updateSection("education", [...education, emptyEducation()]);
+    setCommittedLabels([...committedLabels, { degree: "", institution: "" }]);
+  };
+
+  const removeEntry = (i) => {
+    updateSection("education", education.filter((_, idx) => idx !== i));
+    setCommittedLabels(committedLabels.filter((_, idx) => idx !== i));
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -25,9 +34,7 @@ const EducationCard = () => {
         <div key={i} className="flex flex-col gap-3 pb-4 border-b border-gray-100 last:border-0">
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold text-gray-700">
-              {edu.degree || edu.institution
-                ? `${edu.degree}${edu.institution ? ` — ${edu.institution}` : ""}`
-                : `Education ${i + 1}`}
+              {`Education ${i + 1}`}
             </span>
             <button onClick={() => removeEntry(i)} disabled={education.length === 1} className="text-gray-300 hover:text-red-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
               <Trash2 size={15} />
@@ -35,15 +42,26 @@ const EducationCard = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
             {[
-              { label: "Degree / Qualification", key: "degree", placeholder: "e.g. BSc Software Engineering", span: "md:col-span-2" },
-              { label: "Institution", key: "institution", placeholder: "e.g. CUST", span: "md:col-span-2" },
-              { label: "Location", key: "location", placeholder: "e.g. Islamabad, Pakistan", span: "md:col-span-2" },
-              { label: "From", key: "from", placeholder: "e.g. Sep 2021", span: "" },
-              { label: "To", key: "to", placeholder: "e.g. Jul 2025", span: "" },
+              { label: "Degree", key: "degree", placeholder: "Enter your Degree name", span: "md:col-span-2" },
+              { label: "Institute", key: "institution", placeholder: "Enter your Institute name", span: "md:col-span-2" },
+              { label: "Location", key: "location", placeholder: "Enter Institute location", span: "md:col-span-2" },
+              { label: "From", key: "from", placeholder: "Starting Date", span: "" },
+              { label: "To", key: "to", placeholder: "Ending", span: "" },
             ].map(({ label, key, placeholder, span }) => (
               <div key={key} className={`flex flex-col gap-1 ${span}`}>
                 <label className="text-xs font-semibold text-gray-600">{label}</label>
-                <input type="text" placeholder={placeholder} value={edu[key]} onChange={(e) => update(i, key, e.target.value)} className={inputCls} />
+                <input
+                  type="text"
+                  placeholder={placeholder}
+                  value={edu[key]}
+                  onChange={(e) => update(i, key, e.target.value)}
+                  onBlur={(e) => {
+                    if (key === "degree" || key === "institution") {
+                      commitLabel(i, key, e.target.value);
+                    }
+                  }}
+                  className={inputCls}
+                />
               </div>
             ))}
           </div>
@@ -60,14 +78,25 @@ const EducationCard = () => {
 const SkillsCard = () => {
   const { cvData, updateSection } = useCV();
   const skills = cvData.skills || [];
+  const [committedCategories, setCommittedCategories] = useState(() =>
+    skills.map((s) => s.category || "")
+  );
 
   const update = (i, field, value) => {
     const updated = [...skills];
     updated[i] = { ...updated[i], [field]: value };
     updateSection("skills", updated);
   };
-  const addEntry = () => updateSection("skills", [...skills, emptySkill()]);
-  const removeEntry = (i) => updateSection("skills", skills.filter((_, idx) => idx !== i));
+
+  const addEntry = () => {
+    updateSection("skills", [...skills, emptySkill()]);
+    setCommittedCategories([...committedCategories, ""]);
+  };
+
+  const removeEntry = (i) => {
+    updateSection("skills", skills.filter((_, idx) => idx !== i));
+    setCommittedCategories(committedCategories.filter((_, idx) => idx !== i));
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -77,7 +106,9 @@ const SkillsCard = () => {
       {skills.map((sk, i) => (
         <div key={i} className="flex flex-col gap-3 pb-4 border-b border-gray-100 last:border-0">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-gray-700">{sk.category || `Category ${i + 1}`}</span>
+            <span className="text-sm font-semibold text-gray-700">
+              {committedCategories[i] || `Category ${i + 1}`}
+            </span>
             <button onClick={() => removeEntry(i)} disabled={skills.length === 1} className="text-gray-300 hover:text-red-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
               <Trash2 size={15} />
             </button>
@@ -85,7 +116,18 @@ const SkillsCard = () => {
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold text-gray-600">Category</label>
-              <input type="text" placeholder="e.g. Backend, Frontend, Tools" value={sk.category || ""} onChange={(e) => update(i, "category", e.target.value)} className={inputCls} />
+              <input
+                type="text"
+                placeholder="e.g. Backend, Frontend, Tools"
+                value={sk.category || ""}
+                onChange={(e) => update(i, "category", e.target.value)}
+                onBlur={(e) => {
+                  const updated = [...committedCategories];
+                  updated[i] = e.target.value;
+                  setCommittedCategories(updated);
+                }}
+                className={inputCls}
+              />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold text-gray-600">Skills</label>

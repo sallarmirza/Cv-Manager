@@ -47,9 +47,6 @@ export const PersonalStep = () => {
       <div className="flex flex-col gap-1.5">
         <div className="flex justify-between items-baseline">
           <label className="text-xs font-semibold text-gray-600">Summary</label>
-          <span className={`text-xs font-mono ${summaryText.length > 550 ? "text-red-500" : "text-gray-400"}`}>
-            {summaryText.length} / 600
-          </span>
         </div>
         <textarea
           rows={4}

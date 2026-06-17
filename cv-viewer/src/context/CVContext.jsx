@@ -1,10 +1,10 @@
 import { createContext, useContext, useState } from "react";
 
 const CVContext = createContext(null);
-
 const initialData = {
   personal: {
-    name: "",
+    firstName: "",
+    lastName: "",
     location: "",
     phone: "",
     email: "",
@@ -31,7 +31,6 @@ const initialData = {
     { title: "", bullets: [""] },
   ],
 };
-
 export const CVProvider = ({ children }) => {
   const [cvData, setCvData] = useState(initialData);
 
