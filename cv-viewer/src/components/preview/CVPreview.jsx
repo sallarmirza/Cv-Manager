@@ -3,6 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { ClassicTemplate } from "./templates/ClassicTemplate";
 import { TraditionalTemplate } from "./templates/TraditionalTemplate";
 import { ModernTemplate } from "./templates/ModernTemplate";
+import { useCV } from "../../context/CVContext";
 
 const TEMPLATES = ["Classic", "Traditional", "Modern"];
 
@@ -12,9 +13,21 @@ const templateMap = {
   Modern: ModernTemplate,
 };
 
+const isEmpty = (cvData) => {
+  const { personal, summary, experience, projects } = cvData;
+  return (
+    !personal.firstName &&
+    !personal.lastName &&
+    !summary &&
+    !experience.some((e) => e.title || e.company) &&
+    !projects.some((p) => p.title)
+  );
+};
+
 export const CVPreview = () => {
   const [selected, setSelected] = useState("Classic");
   const [open, setOpen] = useState(false);
+  const { cvData } = useCV();
   const Template = templateMap[selected];
 
   return (
@@ -46,10 +59,21 @@ export const CVPreview = () => {
           )}
         </div>
       </div>
+
       <div className="p-6">
-        <div className="bg-white mx-auto shadow-md" style={{ width: "210mm", minHeight: "297mm", padding: "12mm 14mm" }}>
-          <Template />
-        </div>
+        {isEmpty(cvData) ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <p className="text-sm font-medium text-gray-400">No data to preview</p>
+            <p className="text-xs text-gray-300 mt-1">Go back and fill in your details first</p>
+          </div>
+        ) : (
+          <div
+            className="bg-white mx-auto shadow-md"
+            style={{ width: "210mm", minHeight: "297mm", padding: "12mm 14mm" }}
+          >
+            <Template />
+          </div>
+        )}
       </div>
     </div>
   );

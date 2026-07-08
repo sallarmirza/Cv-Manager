@@ -18,6 +18,14 @@ export const CVForm = ({ onFinish }) => {
   const isFirst = activeStep === 0;
   const isLast = activeStep === STEPS.length - 1;
 
+  const handleNext = () => {
+    if (isLast) {
+      onFinish(); // this switches to preview
+    } else {
+      setActiveStep((s) => s + 1);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex-1 overflow-y-auto bg-gray-50">
@@ -54,10 +62,10 @@ export const CVForm = ({ onFinish }) => {
         </div>
 
         <button
-          onClick={() => (isLast ? onFinish() : setActiveStep((s) => s + 1))}
+          onClick={handleNext}
           className="px-4 py-2 text-sm bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors"
         >
-          {isLast ? "Preview CV" : "Next "}
+          {isLast ? "Preview CV" : "Next"}
         </button>
       </div>
     </div>

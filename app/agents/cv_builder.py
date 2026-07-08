@@ -12,7 +12,6 @@ from fastapi import APIRouter, HTTPException
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
-
 router = APIRouter(tags=["cv"], prefix="/api/cv")
 
 @dataclass
@@ -40,7 +39,7 @@ AVAILABLE_SECTIONS = ["summary", "experience", "achievements", "projects"]
 class CvState(TypedDict):
     raw: dict
     prompt: str
-    target_sections: list[str] 
+    target_sections: list[str]
     improved: dict
     final: dict
 
@@ -50,26 +49,31 @@ class CvTasks:
         self.agent = agent
 
     def plan_sections(self, state: CvState) -> dict:
-        """Ask the LLM which sections the user wants improved based on their prompt."""
         user_prompt = state["prompt"]
 
         if not user_prompt.strip():
             return {"target_sections": AVAILABLE_SECTIONS}
 
-        prompt = f"""You are a CV assistant. Based on the user's instruction, decide which CV sections need to be improved.
+        prompt = f"""You are a professional CV strategist and ATS optimization expert.
+
+A user wants to improve their CV. Based on their instruction, determine which CV sections need to be rewritten.
 
 Available sections: {json.dumps(AVAILABLE_SECTIONS)}
 
 User instruction: "{user_prompt}"
 
-Return a JSON array of section names to improve. Only include sections the user explicitly or implicitly wants changed.
-Examples:
-- "make my summary more professional" ["summary"]
-- "improve the bullet points"  ["experience", "achievements", "projects"]
-- "rewrite everything"  ["summary", "experience", "achievements", "projects"]
-- "fix my experience and projects"  ["experience", "projects"]
+Your job:
+- Read the user instruction carefully.
+- Identify which sections are explicitly or implicitly mentioned.
+- If the user mentions "bullets", "responsibilities", or "work" → include "experience".
+- If the user mentions "projects", "portfolio", or "side work" → include "projects".
+- If the user mentions "intro", "profile", or "about" → include "summary".
+- If the user mentions "awards", "activities", or "extracurricular" → include "achievements".
+- If the user says "everything", "all", "full CV", or "whole" → return all sections.
+- If no specific section is mentioned but a target role or improvement is implied → return all sections.
 
-Return ONLY a JSON array, nothing else. Example: ["summary", "experience"]
+Return ONLY a valid JSON array of section names. No explanation, no markdown.
+Example: ["summary", "experience"]
 """
         response = self.agent.model.invoke(prompt)
         raw_text: str = response.content if hasattr(response, "content") else str(response)
@@ -100,7 +104,7 @@ Return ONLY a JSON array, nothing else. Example: ["summary", "experience"]
 
         if "experience" in target_sections:
             experience_text = "\n".join(
-                f"  - {exp.get('title', '')} at {exp.get('company', '')} ({exp.get('from', '')} - {exp.get('to', '')}), {exp.get('location', '')}: {', '.join(exp.get('bullets', []))}"
+                f"  - Title: {exp.get('title', '')} | Company: {exp.get('company', '')} | Location: {exp.get('location', '')} | Duration: {exp.get('from', '')} to {exp.get('to', '')}\n    Bullets: {chr(10).join(f'      * {b}' for b in exp.get('bullets', []))}"
                 for exp in data.get("experience", [])
             )
             input_lines.append(f"Experience:\n{experience_text}")
@@ -110,7 +114,7 @@ Return ONLY a JSON array, nothing else. Example: ["summary", "experience"]
 
         if "achievements" in target_sections:
             achievements_text = "\n".join(
-                f"  - {ach.get('title', '')}: {', '.join(ach.get('bullets', []))}"
+                f"  - Title: {ach.get('title', '')}\n    Details: {chr(10).join(f'      * {b}' for b in ach.get('bullets', []))}"
                 for ach in data.get("achievements", [])
             )
             input_lines.append(f"Achievements:\n{achievements_text}")
@@ -120,7 +124,7 @@ Return ONLY a JSON array, nothing else. Example: ["summary", "experience"]
 
         if "projects" in target_sections:
             projects_text = "\n".join(
-                f"  - {proj.get('title', '')} ({proj.get('year', '')}): {', '.join(proj.get('bullets', []))}"
+                f"  - Title: {proj.get('title', '')} | Year: {proj.get('year', '')}\n    Bullets: {chr(10).join(f'      * {b}' for b in proj.get('bullets', []))}"
                 for proj in data.get("projects", [])
             )
             input_lines.append(f"Projects:\n{projects_text}")
@@ -130,21 +134,44 @@ Return ONLY a JSON array, nothing else. Example: ["summary", "experience"]
 
         json_shape = "{\n  " + ",\n  ".join(json_shape_lines) + "\n}"
 
-        prompt = f"""You are an expert ATS resume writer.
+        prompt = f"""You are a senior CV writer and ATS optimization specialist with 10+ years of experience helping candidates land interviews at top tech companies.
 
-User instruction: {user_prompt if user_prompt else "Improve the CV to be more professional and ATS-friendly."}
+USER INSTRUCTION: "{user_prompt if user_prompt else 'Improve the CV to be professional and ATS-friendly.'}"
 
-Rewrite ONLY the sections provided below. Return valid JSON with exactly these keys:
+YOUR TASK:
+Rewrite the provided CV sections to be ATS-optimized, role-targeted, and compelling to hiring managers.
+
+STRICT RULES — follow every one of these:
+
+1. NEVER invent facts, companies, job titles, dates, or credentials that are not in the input.
+2. NEVER remove or change: title, company, location, from, to, year fields — copy them exactly.
+3. NEVER add new experience entries or project entries — keep the same count.
+4. Keep the same number of bullet points per entry as the input.
+
+ATS OPTIMIZATION RULES:
+5. Use strong, specific action verbs to start every bullet (Built, Designed, Implemented, Optimized, Automated, Developed, Architected, Reduced, Increased, Led, Delivered).
+6. Follow the format: [Action Verb] + [What you did] + [Technology/Method used] + [Result or Impact if available].
+   Example: "Developed a real-time WhatsApp chatbot using LangGraph and FastAPI, reducing response time by 40%."
+7. Include relevant technical keywords naturally — do not keyword-stuff.
+8. Quantify results wherever the input gives any hint of scale, speed, users, or improvement.
+9. Remove filler phrases like "responsible for", "worked on", "helped with", "assisted in".
+10. Use present tense for current roles, past tense for previous roles.
+
+SUMMARY RULES:
+11. Write exactly 2-3 sentences.
+12. Sentence 1: Who you are + years of experience + main expertise.
+13. Sentence 2: What you specialize in + key technologies.
+14. Sentence 3: What you bring to the team or your career goal aligned with the target role.
+15. Mirror the language and keywords from the user's target role if mentioned.
+16. No first-person pronouns (no "I", "my", "me").
+17. Also dont add texts like x in quanity like unknown figures 
+OUTPUT FORMAT:
+Return ONLY a valid JSON object with exactly these keys:
 {json_shape}
 
-Rules:
-- Do NOT invent new facts, companies, dates, or credentials.
-- Use strong action verbs and quantify results where data is already present.
-- Preserve all original fields (title, company, location, from, to, year) exactly as given.
-- Keep the same number of entries and bullets per entry.
-- Return ONLY the JSON object, no markdown, no commentary.
+No markdown. No explanation. No commentary. Just the JSON object.
 
-INPUT:
+CV DATA TO IMPROVE:
 {chr(10).join(input_lines)}
 """
 
@@ -208,6 +235,7 @@ class CvWorkflow:
 agent_instance = Agent()
 cv_tasks = CvTasks(agent_instance)
 cv_pipeline = CvWorkflow(cv_tasks)
+
 
 @router.post("/generate", response_model=CvResponse)
 async def generate_cv(body: CvRequest):
