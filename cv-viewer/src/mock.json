@@ -1,0 +1,96 @@
+{
+  "full_name": "Salar Ahmed Mirza",
+  "email": "salar@email.com",
+  "phone": "+92-XXX-XXXXXXX",
+  "location": "Islamabad, Pakistan",
+  "portfolio": "https://salar-portfolio-taupe.vercel.app",
+  "linkedin": "https://linkedin.com/in/salar-ahmed-mirza",
+  "github": "https://github.com/YOUR_USERNAME",
+
+  "summary": "AI Engineer and Full Stack Developer specializing in production-grade agentic systems, multi-platform integrations, and scalable backend architectures. Experienced in LangGraph, FastAPI, and React — with a track record of shipping real AI products used in healthcare and immigration tech.",
+
+  "experience": [
+    {
+      "title": "AI Engineer & Full Stack Developer",
+      "company": "M3Hive",
+      "location": "Rawalpindi, Pakistan",
+      "duration": "2024 – Present",
+      "bullets": [
+        "Built a multi-platform AI lead generation chatbot for a visa consultancy, integrating WhatsApp Cloud API, Facebook Messenger, and Instagram into a unified LangGraph agentic pipeline",
+        "Architected a shared ConversationRuntime via dependency injection, enabling clean multi-platform webhook handling with a single backend",
+        "Developed NourDoc, an AI clinical documentation platform that automates medical note generation for healthcare providers",
+        "Implemented Celery + Redis task queue for scheduled lead extraction, digest emails, and background processing",
+        "Built a smart email routing system with salesperson mapping and SubReport logging for specialist digest notifications",
+        "Dockerized full-stack applications using Docker Compose with 5-service setups (FastAPI, Celery worker, Celery beat, Redis, PostgreSQL)",
+        "Managed database schema evolution with Alembic migrations on PostgreSQL"
+      ]
+    }
+  ],
+
+  "projects": [
+    {
+      "name": "TIS AI Lead Generation System",
+      "description": "Production multi-platform chatbot for Tashfeen Immigration Solutions. Handles WhatsApp, Facebook, and Instagram conversations via a unified LangGraph agent. Includes Celery beat scheduling, smart salesperson email routing by visa category, and a SubReport logging system.",
+      "tech": ["Python", "FastAPI", "LangGraph", "WhatsApp Cloud API", "Facebook Messenger API", "Celery", "Redis", "PostgreSQL", "Docker"]
+    },
+    {
+      "name": "NourDoc — AI Clinical Documentation",
+      "description": "AI platform that streamlines clinical documentation for healthcare providers. Automates medical note generation, reducing manual documentation time.",
+      "tech": ["Python", "FastAPI", "LangGraph", "OpenAI GPT-4o", "PostgreSQL", "React.js"]
+    },
+    {
+      "name": "EasyCv — AI CV Builder",
+      "description": "SaaS CV builder with a multi-step form, three LaTeX-matched templates, and AI-enhanced content generation. Built with React Context for state management.",
+      "tech": ["React.js", "Tailwind CSS", "React Context", "Vite"]
+    },
+    {
+      "name": "Personal Portfolio",
+      "description": "Responsive developer portfolio built with React 19, Vite, Tailwind v4, and Framer Motion. Deployed on Vercel.",
+      "tech": ["React 19", "Vite", "Tailwind CSS v4", "Framer Motion", "Vercel"],
+      "link": "https://salar-portfolio-taupe.vercel.app"
+    },
+    {
+      "name": "Webhook Logger",
+      "description": "Personal AWS learning project. Containerized Python Lambda function deployed via ECR, with API Gateway trigger, S3 storage, and IAM configuration.",
+      "tech": ["AWS Lambda", "ECR", "S3", "API Gateway", "IAM", "Docker", "Python"]
+    }
+  ],
+
+  "skills": {
+    "languages": ["Python", "JavaScript", "SQL"],
+    "frameworks_and_libraries": ["FastAPI", "React.js", "LangGraph", "LangChain", "Tailwind CSS", "Framer Motion", "Pydantic"],
+    "ai_and_ml": ["LangGraph", "LangChain", "OpenAI GPT-4o", "RAG (ChromaDB)", "Agentic Pipelines", "MCP Protocol"],
+    "databases": ["PostgreSQL", "Redis", "ChromaDB"],
+    "devops_and_tools": ["Docker", "Docker Compose", "Celery", "Alembic", "Git", "AWS (Lambda, ECR, S3, API Gateway)"],
+    "apis_and_integrations": ["WhatsApp Cloud API", "Facebook Messenger API", "Instagram API", "OpenAI API"]
+  },
+
+  "education": [
+    {
+      "degree": "BS Software Engineering",
+      "institution": "Capital University of Science and Technology (CUST)",
+      "location": "Islamabad, Pakistan",
+      "duration": "2021 – 2025"
+    }
+  ],
+
+  "certifications": [
+    {
+      "name": "placeholder — add any Coursera / Udemy / AWS certs here",
+      "issuer": "",
+      "year": ""
+    }
+  ],
+
+  "languages": [
+    { "language": "Urdu", "proficiency": "Native" },
+    { "language": "English", "proficiency": "Professional" }
+  ],
+
+  "currently_learning": [
+    "Data Structures & Algorithms (Stacks, Queues, Heaps)",
+    "Gang of Four Design Patterns",
+    "AWS (Lambda, ECR, S3, API Gateway)",
+    "A2A and MCP Protocols"
+  ]
+}

@@ -1,129 +1,181 @@
-
 import os
+import json
 import re
 from dataclasses import dataclass, field
-from typing import Optional, TypedDict, Any
-
-from fastapi import APIRouter, Request
+from typing import Optional, TypedDict
+from pathlib import Path
+from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import StateGraph
+from schemas.cv_schema import CvRequest, CvResponse
+from fastapi import APIRouter, HTTPException
 
-router = APIRouter(tags=["create-cv"], prefix="/gen")
+load_dotenv(Path(__file__).parent.parent / ".env")
+
+
+router = APIRouter(tags=["cv"], prefix="/api/cv")
 
 @dataclass
 class AgentConfig:
     model: str = field(default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-1.5-flash"))
     api_key: str = field(default_factory=lambda: os.getenv("GEMINI_KEY", ""))
-    temperature: float = 0.2
+    temperature: float = 0.3
 
 
 class Agent:
     def __init__(self, config: Optional[AgentConfig] = None):
         self.config = config or AgentConfig()
-
         if not self.config.api_key:
             raise ValueError("GEMINI_KEY environment variable is not set.")
-
         self.model = ChatGoogleGenerativeAI(
             model=self.config.model,
             google_api_key=self.config.api_key,
             temperature=self.config.temperature,
         )
 
+
+AVAILABLE_SECTIONS = ["summary", "experience", "achievements", "projects"]
+
+
 class CvState(TypedDict):
-    input: dict
-    improved: dict   
-    final_cv: dict
-
-
-
-SECTION_PATTERN = re.compile(
-    r"###\s*(SUMMARY|ACHIEVEMENTS|EXPERIENCE)\s*(.*?)(?=###\s*(?:SUMMARY|ACHIEVEMENTS|EXPERIENCE)|\Z)",
-    re.S,
-)
+    raw: dict
+    prompt: str
+    target_sections: list[str] 
+    improved: dict
+    final: dict
 
 
 class CvTasks:
     def __init__(self, agent: Agent):
         self.agent = agent
 
+    def plan_sections(self, state: CvState) -> dict:
+        """Ask the LLM which sections the user wants improved based on their prompt."""
+        user_prompt = state["prompt"]
 
-    def _clean_value(self, value: Any) -> Any:
-        """Recursively strip HTML tags, control characters, and extra whitespace."""
-        if isinstance(value, str):
-            value = re.sub(r"<[^>]+>", "", value)          
-            value = re.sub(r"[\x00-\x1F\x7F]", "", value)  
-            value = re.sub(r"\s+", " ", value).strip()
-            return value or None
+        if not user_prompt.strip():
+            return {"target_sections": AVAILABLE_SECTIONS}
 
-        if isinstance(value, list):
-            cleaned = [self._clean_value(item) for item in value]
-            return [item for item in cleaned if item is not None]
+        prompt = f"""You are a CV assistant. Based on the user's instruction, decide which CV sections need to be improved.
 
-        if isinstance(value, dict):
-            return {
-                k: cleaned_v
-                for k, v in value.items()
-                if (cleaned_v := self._clean_value(v)) is not None
-            }
+Available sections: {json.dumps(AVAILABLE_SECTIONS)}
 
-        return value
+User instruction: "{user_prompt}"
 
-    def clean_data(self, state: CvState) -> dict:
-        return {"input": self._clean_value(state["input"])}
+Return a JSON array of section names to improve. Only include sections the user explicitly or implicitly wants changed.
+Examples:
+- "make my summary more professional" ["summary"]
+- "improve the bullet points"  ["experience", "achievements", "projects"]
+- "rewrite everything"  ["summary", "experience", "achievements", "projects"]
+- "fix my experience and projects"  ["experience", "projects"]
 
+Return ONLY a JSON array, nothing else. Example: ["summary", "experience"]
+"""
+        response = self.agent.model.invoke(prompt)
+        raw_text: str = response.content if hasattr(response, "content") else str(response)
+        raw_text = re.sub(r"```(?:json)?|```", "", raw_text).strip()
+
+        try:
+            sections = json.loads(raw_text)
+            sections = [s for s in sections if s in AVAILABLE_SECTIONS]
+        except (json.JSONDecodeError, TypeError):
+            sections = AVAILABLE_SECTIONS
+
+        return {"target_sections": sections}
 
     def improve_content(self, state: CvState) -> dict:
-        data = state["input"]
+        data = state["raw"]
+        user_prompt = state["prompt"]
+        target_sections = state["target_sections"]
+
+        if not target_sections:
+            return {"improved": {}}
+
+        input_lines = []
+        json_shape_lines = []
+
+        if "summary" in target_sections:
+            input_lines.append(f'Summary: {data.get("summary", "")}')
+            json_shape_lines.append('"summary": "improved summary string"')
+
+        if "experience" in target_sections:
+            experience_text = "\n".join(
+                f"  - {exp.get('title', '')} at {exp.get('company', '')} ({exp.get('from', '')} - {exp.get('to', '')}), {exp.get('location', '')}: {', '.join(exp.get('bullets', []))}"
+                for exp in data.get("experience", [])
+            )
+            input_lines.append(f"Experience:\n{experience_text}")
+            json_shape_lines.append(
+                '"experience": [{"title": "...", "company": "...", "location": "...", "from": "...", "to": "...", "bullets": ["...", "..."]}]'
+            )
+
+        if "achievements" in target_sections:
+            achievements_text = "\n".join(
+                f"  - {ach.get('title', '')}: {', '.join(ach.get('bullets', []))}"
+                for ach in data.get("achievements", [])
+            )
+            input_lines.append(f"Achievements:\n{achievements_text}")
+            json_shape_lines.append(
+                '"achievements": [{"title": "...", "bullets": ["...", "..."]}]'
+            )
+
+        if "projects" in target_sections:
+            projects_text = "\n".join(
+                f"  - {proj.get('title', '')} ({proj.get('year', '')}): {', '.join(proj.get('bullets', []))}"
+                for proj in data.get("projects", [])
+            )
+            input_lines.append(f"Projects:\n{projects_text}")
+            json_shape_lines.append(
+                '"projects": [{"title": "...", "year": "...", "bullets": ["...", "..."]}]'
+            )
+
+        json_shape = "{\n  " + ",\n  ".join(json_shape_lines) + "\n}"
 
         prompt = f"""You are an expert ATS resume writer.
-        Rewrite ONLY the sections below in professional ATS-optimised language.
-        Do NOT invent new facts. Do NOT add extra commentary.
 
-        Use EXACTLY these section headers (markdown h3):
-        ### SUMMARY
-        ### ACHIEVEMENTS
-        ### EXPERIENCE
+User instruction: {user_prompt if user_prompt else "Improve the CV to be more professional and ATS-friendly."}
 
-        INPUT:
-        Summary: {data.get("summary", "")}
-        Achievements: {data.get("achievements", "")}
-        Experience: {data.get("experience", "")}
-        """
+Rewrite ONLY the sections provided below. Return valid JSON with exactly these keys:
+{json_shape}
+
+Rules:
+- Do NOT invent new facts, companies, dates, or credentials.
+- Use strong action verbs and quantify results where data is already present.
+- Preserve all original fields (title, company, location, from, to, year) exactly as given.
+- Keep the same number of entries and bullets per entry.
+- Return ONLY the JSON object, no markdown, no commentary.
+
+INPUT:
+{chr(10).join(input_lines)}
+"""
 
         response = self.agent.model.invoke(prompt)
         raw_text: str = response.content if hasattr(response, "content") else str(response)
+        raw_text = re.sub(r"```(?:json)?|```", "", raw_text).strip()
 
-        sections: dict[str, str] = {}
-        for match in SECTION_PATTERN.finditer(raw_text):
-            key = match.group(1).lower()
-            sections[key] = match.group(2).strip()
+        try:
+            improved = json.loads(raw_text)
+        except json.JSONDecodeError:
+            improved = {}
 
-        return {"improved": sections}
+        return {"improved": improved}
 
-
-    def format_cv(self, state: CvState) -> dict:
-        data = state["input"]
+    def merge_and_format(self, state: CvState) -> dict:
+        raw = state["raw"]
         improved = state.get("improved", {})
 
-        return {
-            "final_cv": {
-                "name": f"{data.get('firstName', '')} {data.get('lastName', '')}".strip(),
-                "jobTitle": data.get("jobTitle"),
-                "company": data.get("companyName"),
-                "duration": f"{data.get('companyStartDate', '')} - {data.get('companyEndDate', '')}",
-                "summary": improved.get("summary") or data.get("summary"),
-                "achievements": improved.get("achievements") or data.get("achievements"),
-                "experience": improved.get("experience") or data.get("experience"),
-                "education": {
-                    "degree": data.get("degreeName"),
-                    "institute": data.get("instituteName"),
-                    "duration": f"{data.get('eduStartDate', '')} - {data.get('eduEndDate', '')}",
-                },
-                "skills": data.get("skills", []),
-            }
+        final = {
+            "personal": raw.get("personal", {}),
+            "summary": improved.get("summary") if "summary" in improved else raw.get("summary", ""),
+            "experience": improved.get("experience") if "experience" in improved else raw.get("experience", []),
+            "education": raw.get("education", []),
+            "projects": improved.get("projects") if "projects" in improved else raw.get("projects", []),
+            "skills": raw.get("skills", []),
+            "certifications": raw.get("certifications", []),
+            "languages": raw.get("languages", []),
+            "achievements": improved.get("achievements") if "achievements" in improved else raw.get("achievements", []),
         }
 
+        return {"final": final}
 
 
 class CvWorkflow:
@@ -133,31 +185,38 @@ class CvWorkflow:
 
     def _build(self):
         builder = StateGraph(CvState)
-
-        builder.add_node("clean", self.tasks.clean_data)
+        builder.add_node("plan", self.tasks.plan_sections)
         builder.add_node("improve", self.tasks.improve_content)
-        builder.add_node("format", self.tasks.format_cv)
-
-        builder.set_entry_point("clean")
-        builder.add_edge("clean", "improve")
-        builder.add_edge("improve", "format")
-        builder.set_finish_point("format")
-
+        builder.add_node("merge", self.tasks.merge_and_format)
+        builder.set_entry_point("plan")
+        builder.add_edge("plan", "improve")
+        builder.add_edge("improve", "merge")
+        builder.set_finish_point("merge")
         return builder.compile()
 
-    async def run(self, input_data: dict) -> dict:
-        result = await self.graph.ainvoke({"input": input_data})
-        return result.get("final_cv", {})
+    async def run(self, payload: dict, prompt: str) -> dict:
+        result = await self.graph.ainvoke({
+            "raw": payload,
+            "prompt": prompt,
+            "target_sections": [],
+            "improved": {},
+            "final": {},
+        })
+        return result.get("final", {})
 
 
 agent_instance = Agent()
-cv_service = CvTasks(agent_instance)
-cv_pipeline = CvWorkflow(cv_service)
+cv_tasks = CvTasks(agent_instance)
+cv_pipeline = CvWorkflow(cv_tasks)
 
-
-@router.post("/create-cv")
-async def receive_cv(request: Request):
-    body = await request.json()
-    final_cv = await cv_pipeline.run(body)
-    return final_cv
-
+@router.post("/generate", response_model=CvResponse)
+async def generate_cv(body: CvRequest):
+    try:
+        payload = body.model_dump(by_alias=True)
+        prompt = payload.pop("prompt", "")
+        result = await cv_pipeline.run(payload, prompt)
+        return result
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))

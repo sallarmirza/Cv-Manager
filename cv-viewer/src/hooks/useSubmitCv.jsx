@@ -6,10 +6,10 @@ export const useSubmitCV = () => {
   const { cvData } = useCV();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [result, setResult] = useState(null);
 
-  const preparePayload = () => {
+  const preparePayload = (prompt) => {
     return {
+      prompt: prompt || "",
       personal: {
         firstName: cvData.personal?.firstName || "",
         lastName: cvData.personal?.lastName || "",
@@ -55,14 +55,12 @@ export const useSubmitCV = () => {
     };
   };
 
-  const submit = async () => {
+  const submit = async (prompt = "") => {
     setLoading(true);
     setError(null);
-    setResult(null);
     try {
-      const payload = preparePayload();
+      const payload = preparePayload(prompt);
       const data = await submitCV(payload);
-      setResult(data);
       return data;
     } catch (err) {
       setError(err.message);
@@ -72,5 +70,5 @@ export const useSubmitCV = () => {
     }
   };
 
-  return { submit, loading, error, result };
+  return { submit, loading, error };
 };

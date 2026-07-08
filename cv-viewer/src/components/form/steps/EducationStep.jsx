@@ -16,15 +16,9 @@ const EducationCard = () => {
     updateSection("education", updated);
   };
 
-  const addEntry = () => {
-    updateSection("education", [...education, emptyEducation()]);
-    setCommittedLabels([...committedLabels, { degree: "", institution: "" }]);
-  };
+  const addEntry = () => updateSection("education", [...education, emptyEducation()]);
 
-  const removeEntry = (i) => {
-    updateSection("education", education.filter((_, idx) => idx !== i));
-    setCommittedLabels(committedLabels.filter((_, idx) => idx !== i));
-  };
+  const removeEntry = (i) => updateSection("education", education.filter((_, idx) => idx !== i));
 
   return (
     <div className="flex flex-col gap-4">
@@ -34,7 +28,7 @@ const EducationCard = () => {
         <div key={i} className="flex flex-col gap-3 pb-4 border-b border-gray-100 last:border-0">
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold text-gray-700">
-              {`Education ${i + 1}`}
+              {edu.degree || edu.institution || `Education ${i + 1}`}
             </span>
             <button onClick={() => removeEntry(i)} disabled={education.length === 1} className="text-gray-300 hover:text-red-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
               <Trash2 size={15} />
@@ -55,11 +49,6 @@ const EducationCard = () => {
                   placeholder={placeholder}
                   value={edu[key]}
                   onChange={(e) => update(i, key, e.target.value)}
-                  onBlur={(e) => {
-                    if (key === "degree" || key === "institution") {
-                      commitLabel(i, key, e.target.value);
-                    }
-                  }}
                   className={inputCls}
                 />
               </div>

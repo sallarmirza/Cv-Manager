@@ -1,7 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
 export const submitCV = async (cvData) => {
-  const response = await fetch(`${API_BASE}/api/cv/generate`, {
+  const response = await fetch("http://127.0.0.1:8000/api/cv/generate", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

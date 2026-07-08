@@ -30,11 +30,6 @@ export const ModernTemplate = () => {
           <h1 className="text-lg font-black uppercase tracking-wide text-gray-900">
             {`${personal.firstName} ${personal.lastName}`.trim() || "Your Name"}
           </h1>
-          {summary && (
-            <p className="text-xs text-gray-500 mt-0.5 max-w-xs leading-relaxed">
-              {summary.slice(0, 120)}...
-            </p>
-          )}
         </div>
         <div className="text-right text-xs text-gray-600 flex flex-col gap-0.5">
           {personal.email && <span>{personal.email}</span>}
@@ -60,9 +55,7 @@ export const ModernTemplate = () => {
                 {skills.map((sk, i) =>
                   sk.category || sk.items ? (
                     <div key={i} className="text-xs text-gray-700">
-                      <span className="font-bold text-gray-900">
-                        {sk.category}:
-                      </span>{" "}
+                      <span className="font-bold text-gray-900">{sk.category}:</span>{" "}
                       <span>{sk.items}</span>
                     </div>
                   ) : null,
@@ -80,21 +73,14 @@ export const ModernTemplate = () => {
           {projects.map((proj, i) => (
             <div key={i} className="flex gap-3 mb-2">
               {proj.year && (
-                <span className="text-xs text-gray-400 w-10 shrink-0 pt-0.5">
-                  {proj.year}
-                </span>
+                <span className="text-xs text-gray-400 w-10 shrink-0 pt-0.5">{proj.year}</span>
               )}
               <div className="flex-1">
-                <span className="text-xs font-bold text-gray-900">
-                  {proj.title}
-                </span>
+                <span className="text-xs font-bold text-gray-900">{proj.title}</span>
                 {proj.bullets.filter(Boolean).length > 0 && (
                   <ul className="mt-0.5">
                     {proj.bullets.filter(Boolean).map((b, bi) => (
-                      <li
-                        key={bi}
-                        className="text-xs text-gray-700 flex gap-1.5"
-                      >
+                      <li key={bi} className="text-xs text-gray-700 flex gap-1.5">
                         <span className="shrink-0 mt-0.5">•</span>
                         <span>{b}</span>
                       </li>
@@ -114,14 +100,11 @@ export const ModernTemplate = () => {
           {experience.map((exp, i) => (
             <div key={i} className="flex gap-3 mb-2">
               <span className="text-xs text-gray-400 w-10 shrink-0 pt-0.5">
-                {exp.from}
-                {exp.to ? `–${exp.to}` : ""}
+                {exp.from}{exp.to ? `–${exp.to}` : ""}
               </span>
               <div className="flex-1">
                 <div className="flex justify-between">
-                  <span className="text-xs font-bold text-gray-900">
-                    {exp.title}
-                  </span>
+                  <span className="text-xs font-bold text-gray-900">{exp.title}</span>
                   {exp.company && (
                     <span className="text-xs text-gray-500">{exp.company}</span>
                   )}
@@ -129,10 +112,7 @@ export const ModernTemplate = () => {
                 {exp.bullets.filter(Boolean).length > 0 && (
                   <ul className="mt-0.5">
                     {exp.bullets.filter(Boolean).map((b, bi) => (
-                      <li
-                        key={bi}
-                        className="text-xs text-gray-700 flex gap-1.5"
-                      >
+                      <li key={bi} className="text-xs text-gray-700 flex gap-1.5">
                         <span className="shrink-0 mt-0.5">•</span>
                         <span>{b}</span>
                       </li>
@@ -152,18 +132,12 @@ export const ModernTemplate = () => {
           {education.map((edu, i) => (
             <div key={i} className="flex gap-3 mb-1.5">
               <span className="text-xs text-gray-400 w-10 shrink-0 pt-0.5">
-                {edu.from}
-                {edu.to ? `–${edu.to}` : ""}
+                {edu.from}{edu.to ? `–${edu.to}` : ""}
               </span>
               <div className="flex-1">
-                <span className="text-xs font-bold text-gray-900">
-                  {edu.degree}
-                </span>
+                <span className="text-xs font-bold text-gray-900">{edu.degree}</span>
                 {edu.institution && (
-                  <span className="text-xs text-gray-600">
-                    {" "}
-                    — {edu.institution}
-                  </span>
+                  <span className="text-xs text-gray-600"> — {edu.institution}</span>
                 )}
               </div>
             </div>
@@ -192,12 +166,11 @@ export const ModernTemplate = () => {
             <p className="text-xs text-gray-700">
               {languages
                 .filter((l) => l.language)
-                .map((lang, i) => (
+                .map((lang, i, arr) => (
                   <span key={i}>
                     <span className="font-bold">{lang.language}</span>
                     {lang.proficiency && ` – ${lang.proficiency}`}
-                    {i < languages.filter((l) => l.language).length - 1 &&
-                      "   |   "}
+                    {i < arr.length - 1 && "   |   "}
                   </span>
                 ))}
             </p>
